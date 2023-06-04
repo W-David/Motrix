@@ -26,126 +26,126 @@ import appLocaleZhTW from '@shared/locales/zh-TW'
 // Please keep the locale key in alphabetical order.
 /* eslint-disable quote-props */
 const resources = {
-  'ar': {
-    translation: {
-      ...appLocaleAr
-    }
-  },
-  'bg': {
-    translation: {
-      ...appLocaleBg
-    }
-  },
-  'ca': {
-    translation: {
-      ...appLocaleCa
-    }
-  },
-  'de': {
-    translation: {
-      ...appLocaleDe
-    }
-  },
-  'el': {
-    translation: {
-      ...appLocaleEl
-    }
-  },
-  'en-US': {
-    translation: {
-      ...appLocaleEnUS
-    }
-  },
-  'fa': {
-    translation: {
-      ...appLocaleFa
-    }
-  },
-  'fr': {
-    translation: {
-      ...appLocaleFr
-    }
-  },
-  'hu': {
-    translation: {
-      ...appLocaleHu
-    }
-  },
-  'id': {
-    translation: {
-      ...appLocaleId
-    }
-  },
-  'it': {
-    translation: {
-      ...appLocaleIt
-    }
-  },
-  'ja': {
-    translation: {
-      ...appLocaleJa
-    }
-  },
-  'nl': {
-    translation: {
-      ...appLocaleNl
-    }
-  },
-  'ko': {
-    translation: {
-      ...appLocaleKo
-    }
-  },
-  'pl': {
-    translation: {
-      ...appLocalePl
-    }
-  },
-  'pt-BR': {
-    translation: {
-      ...appLocalePtBR
-    }
-  },
-  'ro': {
-    translation: {
-      ...appLocaleRo
-    }
-  },
-  'ru': {
-    translation: {
-      ...appLocaleRu
-    }
-  },
-  'th': {
-    translation: {
-      ...appLocaleTh
-    }
-  },
-  'tr': {
-    translation: {
-      ...appLocaleTr
-    }
-  },
-  'uk': {
-    translation: {
-      ...appLocaleUk
-    }
-  },
-  'vi': {
-    translation: {
-      ...appLocaleVi
-    }
-  },
-  'zh-CN': {
-    translation: {
-      ...appLocaleZhCN
-    }
-  },
-  'zh-TW': {
-    translation: {
-      ...appLocaleZhTW
-    }
-  }
+	ar: {
+		translation: {
+			...appLocaleAr
+		}
+	},
+	bg: {
+		translation: {
+			...appLocaleBg
+		}
+	},
+	ca: {
+		translation: {
+			...appLocaleCa
+		}
+	},
+	de: {
+		translation: {
+			...appLocaleDe
+		}
+	},
+	el: {
+		translation: {
+			...appLocaleEl
+		}
+	},
+	'en-US': {
+		translation: {
+			...appLocaleEnUS
+		}
+	},
+	fa: {
+		translation: {
+			...appLocaleFa
+		}
+	},
+	fr: {
+		translation: {
+			...appLocaleFr
+		}
+	},
+	hu: {
+		translation: {
+			...appLocaleHu
+		}
+	},
+	id: {
+		translation: {
+			...appLocaleId
+		}
+	},
+	it: {
+		translation: {
+			...appLocaleIt
+		}
+	},
+	ja: {
+		translation: {
+			...appLocaleJa
+		}
+	},
+	nl: {
+		translation: {
+			...appLocaleNl
+		}
+	},
+	ko: {
+		translation: {
+			...appLocaleKo
+		}
+	},
+	pl: {
+		translation: {
+			...appLocalePl
+		}
+	},
+	'pt-BR': {
+		translation: {
+			...appLocalePtBR
+		}
+	},
+	ro: {
+		translation: {
+			...appLocaleRo
+		}
+	},
+	ru: {
+		translation: {
+			...appLocaleRu
+		}
+	},
+	th: {
+		translation: {
+			...appLocaleTh
+		}
+	},
+	tr: {
+		translation: {
+			...appLocaleTr
+		}
+	},
+	uk: {
+		translation: {
+			...appLocaleUk
+		}
+	},
+	vi: {
+		translation: {
+			...appLocaleVi
+		}
+	},
+	'zh-CN': {
+		translation: {
+			...appLocaleZhCN
+		}
+	},
+	'zh-TW': {
+		translation: {
+			...appLocaleZhTW
+		}
+	}
 }
 /* eslint-enable quote-props */
 

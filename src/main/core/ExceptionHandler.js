@@ -1,34 +1,34 @@
-import { app, dialog } from 'electron'
+import {app, dialog} from 'electron'
 import is from 'electron-is'
 
 import logger from './Logger'
 
 const defaults = {
-  showDialog: !is.dev()
+	showDialog: !is.dev()
 }
 export default class ExceptionHandler {
-  constructor (options) {
-    this.options = {
-      ...defaults,
-      ...options
-    }
+	constructor(options) {
+		this.options = {
+			...defaults,
+			...options
+		}
 
-    this.setup()
-  }
+		this.setup()
+	}
 
-  setup () {
-    if (is.dev()) {
-      return
-    }
-    const { showDialog } = this.options
-    process.on('uncaughtException', (err) => {
-      const { message, stack } = err
-      logger.error(`[Motrix] Uncaught exception: ${message}`)
-      logger.error(stack)
+	setup() {
+		if (is.dev()) {
+			return
+		}
+		const {showDialog} = this.options
+		process.on('uncaughtException', err => {
+			const {message, stack} = err
+			logger.error(`[Motrix] Uncaught exception: ${message}`)
+			logger.error(stack)
 
-      if (showDialog && app.isReady()) {
-        dialog.showErrorBox('Error: ', message)
-      }
-    })
-  }
+			if (showDialog && app.isReady()) {
+				dialog.showErrorBox('Error: ', message)
+			}
+		})
+	}
 }

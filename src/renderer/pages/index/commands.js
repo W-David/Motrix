@@ -1,180 +1,171 @@
-import { Message } from 'element-ui'
-import { base64StringToBlob } from 'blob-util'
+import {Message} from 'element-ui'
+import {base64StringToBlob} from 'blob-util'
 
 import router from '@/router'
 import store from '@/store'
-import { buildFileList } from '@shared/utils'
-import { ADD_TASK_TYPE } from '@shared/constants'
-import { getLocaleManager } from '@/components/Locale'
-import { commands } from '@/components/CommandManager/instance'
-import {
-  initTaskForm,
-  buildUriPayload,
-  buildTorrentPayload
-} from '@/utils/task'
+import {buildFileList} from '@shared/utils'
+import {ADD_TASK_TYPE} from '@shared/constants'
+import {getLocaleManager} from '@/components/Locale'
+import {commands} from '@/components/CommandManager/instance'
+import {initTaskForm, buildUriPayload, buildTorrentPayload} from '@/utils/task'
 
 const i18n = getLocaleManager().getI18n()
 
 const updateSystemTheme = (payload = {}) => {
-  const { theme } = payload
-  store.dispatch('app/updateSystemTheme', theme)
+	const {theme} = payload
+	store.dispatch('app/updateSystemTheme', theme)
 }
 
 const updateTheme = (payload = {}) => {
-  const { theme } = payload
-  store.dispatch('preference/updateAppTheme', theme)
+	const {theme} = payload
+	store.dispatch('preference/updateAppTheme', theme)
 }
 
 const updateLocale = (payload = {}) => {
-  const { locale } = payload
-  store.dispatch('preference/updateAppLocale', locale)
+	const {locale} = payload
+	store.dispatch('preference/updateAppLocale', locale)
 }
 
 const updateTrayFocused = (payload = {}) => {
-  const { focused } = payload
-  store.dispatch('app/updateTrayFocused', focused)
+	const {focused} = payload
+	store.dispatch('app/updateTrayFocused', focused)
 }
 
 const showAboutPanel = () => {
-  store.dispatch('app/showAboutPanel')
+	store.dispatch('app/showAboutPanel')
 }
 
 const addTask = (payload = {}) => {
-  const {
-    type = ADD_TASK_TYPE.URI,
-    uri,
-    silent,
-    ...rest
-  } = payload
+	const {type = ADD_TASK_TYPE.URI, uri, silent, ...rest} = payload
 
-  const options = {
-    ...rest
-  }
+	const options = {
+		...rest
+	}
 
-  if (type === ADD_TASK_TYPE.URI && uri) {
-    store.dispatch('app/updateAddTaskUrl', uri)
-  }
-  store.dispatch('app/updateAddTaskOptions', options)
+	if (type === ADD_TASK_TYPE.URI && uri) {
+		store.dispatch('app/updateAddTaskUrl', uri)
+	}
+	store.dispatch('app/updateAddTaskOptions', options)
 
-  if (silent) {
-    addTaskSilent(type)
-    return
-  }
+	if (silent) {
+		addTaskSilent(type)
+		return
+	}
 
-  store.dispatch('app/showAddTaskDialog', type)
+	store.dispatch('app/showAddTaskDialog', type)
 }
 
-const addTaskSilent = (type) => {
-  try {
-    addTaskByType(type)
-  } catch (err) {
-    Message.error(i18n.t(err.message))
-  }
+const addTaskSilent = type => {
+	try {
+		addTaskByType(type)
+	} catch (err) {
+		Message.error(i18n.t(err.message))
+	}
 }
 
-const addTaskByType = (type) => {
-  const form = initTaskForm(store.state)
+const addTaskByType = type => {
+	const form = initTaskForm(store.state)
 
-  let payload = null
-  if (type === ADD_TASK_TYPE.URI) {
-    payload = buildUriPayload(form)
-    store.dispatch('task/addUri', payload).catch(err => {
-      Message.error(err.message)
-    })
-  } else if (type === ADD_TASK_TYPE.TORRENT) {
-    payload = buildTorrentPayload(form)
-    store.dispatch('task/addTorrent', payload).catch(err => {
-      Message.error(err.message)
-    })
-  } else if (type === 'metalink') {
-  // @TODO addMetalink
-  } else {
-    console.error('addTask fail', form)
-  }
+	let payload = null
+	if (type === ADD_TASK_TYPE.URI) {
+		payload = buildUriPayload(form)
+		store.dispatch('task/addUri', payload).catch(err => {
+			Message.error(err.message)
+		})
+	} else if (type === ADD_TASK_TYPE.TORRENT) {
+		payload = buildTorrentPayload(form)
+		store.dispatch('task/addTorrent', payload).catch(err => {
+			Message.error(err.message)
+		})
+	} else if (type === 'metalink') {
+		// @TODO addMetalink
+	} else {
+		console.error('addTask fail', form)
+	}
 }
 
 const showAddBtTask = () => {
-  store.dispatch('app/showAddTaskDialog', ADD_TASK_TYPE.TORRENT)
+	store.dispatch('app/showAddTaskDialog', ADD_TASK_TYPE.TORRENT)
 }
 
 const showAddBtTaskWithFile = (payload = {}) => {
-  const { name, dataURL = '' } = payload
-  if (!dataURL) {
-    return
-  }
+	const {name, dataURL = ''} = payload
+	if (!dataURL) {
+		return
+	}
 
-  const blob = base64StringToBlob(dataURL, 'application/x-bittorrent')
-  const file = new File([blob], name, { type: 'application/x-bittorrent' })
-  const fileList = buildFileList(file)
+	const blob = base64StringToBlob(dataURL, 'application/x-bittorrent')
+	const file = new File([blob], name, {type: 'application/x-bittorrent'})
+	const fileList = buildFileList(file)
 
-  store.dispatch('app/showAddTaskDialog', ADD_TASK_TYPE.TORRENT)
-  setTimeout(() => {
-    store.dispatch('app/addTaskAddTorrents', { fileList })
-  }, 200)
+	store.dispatch('app/showAddTaskDialog', ADD_TASK_TYPE.TORRENT)
+	setTimeout(() => {
+		store.dispatch('app/addTaskAddTorrents', {fileList})
+	}, 200)
 }
 
 const navigateTaskList = (payload = {}) => {
-  const { status = 'active' } = payload
+	const {status = 'active'} = payload
 
-  router.push({ path: `/task/${status}` }).catch(err => {
-    console.log(err)
-  })
+	router.push({path: `/task/${status}`}).catch(err => {
+		console.log(err)
+	})
 }
 
 const navigatePreferences = () => {
-  router.push({ path: '/preference' }).catch(err => {
-    console.log(err)
-  })
+	router.push({path: '/preference'}).catch(err => {
+		console.log(err)
+	})
 }
 
 const showUnderDevelopmentMessage = () => {
-  Message.info(i18n.t('app.under-development-message'))
+	Message.info(i18n.t('app.under-development-message'))
 }
 
 const pauseTask = () => {
-  store.dispatch('task/batchPauseSelectedTasks')
+	store.dispatch('task/batchPauseSelectedTasks')
 }
 
 const resumeTask = () => {
-  store.dispatch('task/batchResumeSelectedTasks')
+	store.dispatch('task/batchResumeSelectedTasks')
 }
 
 const deleteTask = () => {
-  commands.emit('batch-delete-task', {
-    deleteWithFiles: false
-  })
+	commands.emit('batch-delete-task', {
+		deleteWithFiles: false
+	})
 }
 
 const moveTaskUp = () => {
-  showUnderDevelopmentMessage()
+	showUnderDevelopmentMessage()
 }
 
 const moveTaskDown = () => {
-  showUnderDevelopmentMessage()
+	showUnderDevelopmentMessage()
 }
 
 const pauseAllTask = () => {
-  store.dispatch('task/pauseAllTask')
+	store.dispatch('task/pauseAllTask')
 }
 
 const resumeAllTask = () => {
-  store.dispatch('task/resumeAllTask')
+	store.dispatch('task/resumeAllTask')
 }
 
 const selectAllTask = () => {
-  store.dispatch('task/selectAllTask')
+	store.dispatch('task/selectAllTask')
 }
 
 const showTaskDetail = (payload = {}) => {
-  const { gid } = payload
-  navigateTaskList()
-  if (gid) {
-    store.dispatch('task/showTaskDetailByGid', gid)
-  }
+	const {gid} = payload
+	navigateTaskList()
+	if (gid) {
+		store.dispatch('task/showTaskDetailByGid', gid)
+	}
 }
 
 const fetchPreference = () => {
-  store.dispatch('preference/fetchPreference')
+	store.dispatch('preference/fetchPreference')
 }
 
 commands.register('application:task-list', navigateTaskList)

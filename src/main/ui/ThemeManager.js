@@ -1,39 +1,39 @@
-import { EventEmitter } from 'node:events'
-import { nativeTheme } from 'electron'
+import {EventEmitter} from 'node:events'
+import {nativeTheme} from 'electron'
 
-import { APP_THEME } from '@shared/constants'
+import {APP_THEME} from '@shared/constants'
 import logger from '../core/Logger'
-import { getSystemTheme } from '../utils'
+import {getSystemTheme} from '../utils'
 
 export default class ThemeManager extends EventEmitter {
-  constructor (options = {}) {
-    super()
+	constructor(options = {}) {
+		super()
 
-    this.options = options
-    this.init()
-  }
+		this.options = options
+		this.init()
+	}
 
-  init () {
-    this.systemTheme = getSystemTheme()
+	init() {
+		this.systemTheme = getSystemTheme()
 
-    this.handleEvents()
-  }
+		this.handleEvents()
+	}
 
-  getSystemTheme () {
-    return this.systemTheme
-  }
+	getSystemTheme() {
+		return this.systemTheme
+	}
 
-  handleEvents () {
-    nativeTheme.on('updated', () => {
-      const theme = getSystemTheme()
-      this.systemTheme = theme
-      logger.info('[Motrix] nativeTheme updated===>', theme)
-      this.emit('system-theme-change', theme)
-    })
-  }
+	handleEvents() {
+		nativeTheme.on('updated', () => {
+			const theme = getSystemTheme()
+			this.systemTheme = theme
+			logger.info('[Motrix] nativeTheme updated===>', theme)
+			this.emit('system-theme-change', theme)
+		})
+	}
 
-  updateSystemTheme (theme) {
-    theme = theme === APP_THEME.AUTO ? 'system' : theme
-    nativeTheme.themeSource = theme
-  }
+	updateSystemTheme(theme) {
+		theme = theme === APP_THEME.AUTO ? 'system' : theme
+		nativeTheme.themeSource = theme
+	}
 }

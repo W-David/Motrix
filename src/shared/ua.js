@@ -4,8 +4,8 @@ export const CHROME_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 export const DU_UA = 'netdisk;6.0.0.12;PC;PC-Windows;10.0.16299;WindowsBaiduYunGuanJia'
 
 export default {
-  aria2: ARIA2_UA,
-  transmission: TRANSMISSION_UA,
-  chrome: CHROME_UA,
-  du: DU_UA
+	aria2: ARIA2_UA,
+	transmission: TRANSMISSION_UA,
+	chrome: CHROME_UA,
+	du: DU_UA
 }

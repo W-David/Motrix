@@ -1,301 +1,307 @@
-import { join } from 'node:path'
-import { EventEmitter } from 'node:events'
-import { debounce } from 'lodash'
-import { app, shell, screen, BrowserWindow } from 'electron'
+import {join} from 'node:path'
+import {EventEmitter} from 'node:events'
+import {debounce} from 'lodash'
+import {app, shell, screen, BrowserWindow} from 'electron'
 import is from 'electron-is'
 
 import pageConfig from '../configs/page'
 import logger from '../core/Logger'
 
 const baseBrowserOptions = {
-  titleBarStyle: 'hiddenInset',
-  show: false,
-  width: 1024,
-  height: 768,
-  backgroundColor: '#fff',
-  webPreferences: {
-    nodeIntegration: true
-  }
+	titleBarStyle: 'hiddenInset',
+	show: false,
+	width: 1024,
+	height: 768,
+	backgroundColor: '#fff',
+	webPreferences: {
+		nodeIntegration: true
+	}
 }
 
 // fix: BrowserWindow rendering bug under linux
 const defaultBrowserOptions = is.macOS()
-  ? {
-    ...baseBrowserOptions,
-    vibrancy: 'ultra-dark',
-    visualEffectState: 'active',
-    backgroundColor: '#00000000'
-  }
-  : {
-    ...baseBrowserOptions
-  }
+	? {
+			...baseBrowserOptions,
+			vibrancy: 'ultra-dark',
+			visualEffectState: 'active',
+			backgroundColor: '#00000000'
+	  }
+	: {
+			...baseBrowserOptions
+	  }
 
 export default class WindowManager extends EventEmitter {
-  constructor (options = {}) {
-    super()
-    this.userConfig = options.userConfig || {}
+	constructor(options = {}) {
+		super()
+		this.userConfig = options.userConfig || {}
 
-    this.windows = {}
+		this.windows = {}
 
-    this.willQuit = false
+		this.willQuit = false
 
-    this.handleBeforeQuit()
+		this.handleBeforeQuit()
 
-    this.handleAllWindowClosed()
-  }
+		this.handleAllWindowClosed()
+	}
 
-  setWillQuit (flag) {
-    this.willQuit = flag
-  }
+	setWillQuit(flag) {
+		this.willQuit = flag
+	}
 
-  getPageOptions (page) {
-    const result = pageConfig[page] || {}
-    const hideAppMenu = this.userConfig['hide-app-menu']
-    if (hideAppMenu) {
-      result.attrs.frame = false
-    }
+	getPageOptions(page) {
+		const result = pageConfig[page] || {}
+		const hideAppMenu = this.userConfig['hide-app-menu']
+		if (hideAppMenu) {
+			result.attrs.frame = false
+		}
 
-    // Optimized for small screen users
-    const { width, height } = screen.getPrimaryDisplay().workAreaSize
-    const widthScale = width >= 1280 ? 1 : 0.875
-    const heightScale = height >= 800 ? 1 : 0.875
-    result.attrs.width *= widthScale
-    result.attrs.height *= heightScale
+		// Optimized for small screen users
+		const {width, height} = screen.getPrimaryDisplay().workAreaSize
+		const widthScale = width >= 1280 ? 1 : 0.875
+		const heightScale = height >= 800 ? 1 : 0.875
+		result.attrs.width *= widthScale
+		result.attrs.height *= heightScale
 
-    // fix AppImage Dock Icon Missing
-    // https://github.com/AppImage/AppImageKit/wiki/Bundling-Electron-apps
-    if (is.linux()) {
-      result.attrs.icon = join(__static, './512x512.png')
-    }
+		// fix AppImage Dock Icon Missing
+		// https://github.com/AppImage/AppImageKit/wiki/Bundling-Electron-apps
+		if (is.linux()) {
+			result.attrs.icon = join(__static, './512x512.png')
+		}
 
-    return result
-  }
+		return result
+	}
 
-  getPageBounds (page) {
-    const enabled = this.userConfig['keep-window-state']
-    const windowStateMap = this.userConfig['window-state'] || {}
-    let result = null
-    if (enabled) {
-      result = windowStateMap[page]
-    }
+	getPageBounds(page) {
+		const enabled = this.userConfig['keep-window-state']
+		const windowStateMap = this.userConfig['window-state'] || {}
+		let result = null
+		if (enabled) {
+			result = windowStateMap[page]
+		}
 
-    return result
-  }
+		return result
+	}
 
-  openWindow (page, options = {}) {
-    const pageOptions = this.getPageOptions(page)
-    const { hidden } = options
-    const autoHideWindow = this.userConfig['auto-hide-window']
-    let window = this.windows[page] || null
-    if (window) {
-      window.show()
-      window.focus()
-      return window
-    }
+	openWindow(page, options = {}) {
+		const pageOptions = this.getPageOptions(page)
+		const {hidden} = options
+		const autoHideWindow = this.userConfig['auto-hide-window']
+		let window = this.windows[page] || null
+		if (window) {
+			window.show()
+			window.focus()
+			return window
+		}
 
-    window = new BrowserWindow({
-      ...defaultBrowserOptions,
-      ...pageOptions.attrs,
-      webPreferences: {
-        enableRemoteModule: true,
-        contextIsolation: false,
-        nodeIntegration: true,
-        nodeIntegrationInWorker: true
-      }
-    })
+		window = new BrowserWindow({
+			...defaultBrowserOptions,
+			...pageOptions.attrs,
+			webPreferences: {
+				enableRemoteModule: true,
+				contextIsolation: false,
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		})
 
-    const bounds = this.getPageBounds(page)
-    if (bounds) {
-      window.setBounds(bounds)
-    }
+		const bounds = this.getPageBounds(page)
+		if (bounds) {
+			window.setBounds(bounds)
+		}
 
-    if (is.dev() && pageOptions.openDevTools) {
-      window.webContents.openDevTools()
-    }
+		if (is.dev() && pageOptions.openDevTools) {
+			window.webContents.openDevTools()
+		}
 
-    window.webContents.setWindowOpenHandler(({ url }) => {
-      shell.openExternal(url)
-      return { action: 'deny' }
-    })
+		window.webContents.setWindowOpenHandler(({url}) => {
+			shell.openExternal(url)
+			return {action: 'deny'}
+		})
 
-    if (pageOptions.url) {
-      window.loadURL(pageOptions.url)
-    }
+		if (pageOptions.url) {
+			window.loadURL(pageOptions.url)
+		}
 
-    window.once('ready-to-show', () => {
-      if (!hidden) {
-        window.show()
-      }
-    })
+		window.once('ready-to-show', () => {
+			if (!hidden) {
+				window.show()
+			}
+		})
 
-    window.on('enter-full-screen', () => {
-      this.emit('enter-full-screen', window)
-    })
+		window.on('enter-full-screen', () => {
+			this.emit('enter-full-screen', window)
+		})
 
-    window.on('leave-full-screen', () => {
-      this.emit('leave-full-screen', window)
-    })
+		window.on('leave-full-screen', () => {
+			this.emit('leave-full-screen', window)
+		})
 
-    this.handleWindowState(page, window)
+		this.handleWindowState(page, window)
 
-    this.handleWindowClose(pageOptions, page, window)
+		this.handleWindowClose(pageOptions, page, window)
 
-    this.bindAfterClosed(page, window)
+		this.bindAfterClosed(page, window)
 
-    this.addWindow(page, window)
-    if (autoHideWindow) {
-      this.handleWindowBlur()
-    }
+		this.addWindow(page, window)
+		if (autoHideWindow) {
+			this.handleWindowBlur()
+		}
 
-    return window
-  }
+		return window
+	}
 
-  getWindow (page) {
-    return this.windows[page]
-  }
+	getWindow(page) {
+		return this.windows[page]
+	}
 
-  getWindows () {
-    return this.windows || {}
-  }
+	getWindows() {
+		return this.windows || {}
+	}
 
-  getWindowList () {
-    return Object.values(this.getWindows())
-  }
+	getWindowList() {
+		return Object.values(this.getWindows())
+	}
 
-  addWindow (page, window) {
-    this.windows[page] = window
-  }
+	addWindow(page, window) {
+		this.windows[page] = window
+	}
 
-  destroyWindow (page) {
-    const win = this.getWindow(page)
-    if (!win) {
-      return
-    }
+	destroyWindow(page) {
+		const win = this.getWindow(page)
+		if (!win) {
+			return
+		}
 
-    this.removeWindow(page)
-    win.removeListener('closed')
-    win.removeListener('move')
-    win.removeListener('resize')
-    win.destroy()
-  }
+		this.removeWindow(page)
+		win.removeListener('closed')
+		win.removeListener('move')
+		win.removeListener('resize')
+		win.destroy()
+	}
 
-  removeWindow (page) {
-    this.windows[page] = null
-  }
+	removeWindow(page) {
+		this.windows[page] = null
+	}
 
-  bindAfterClosed (page, window) {
-    window.on('closed', (event) => {
-      this.removeWindow(page)
-    })
-  }
+	bindAfterClosed(page, window) {
+		window.on('closed', event => {
+			this.removeWindow(page)
+		})
+	}
 
-  handleWindowState (page, window) {
-    window.on('resize', debounce(() => {
-      const bounds = window.getBounds()
-      this.emit('window-resized', { page, bounds })
-    }, 500))
+	handleWindowState(page, window) {
+		window.on(
+			'resize',
+			debounce(() => {
+				const bounds = window.getBounds()
+				this.emit('window-resized', {page, bounds})
+			}, 500)
+		)
 
-    window.on('move', debounce(() => {
-      const bounds = window.getBounds()
-      this.emit('window-moved', { page, bounds })
-    }, 500))
-  }
+		window.on(
+			'move',
+			debounce(() => {
+				const bounds = window.getBounds()
+				this.emit('window-moved', {page, bounds})
+			}, 500)
+		)
+	}
 
-  handleWindowClose (pageOptions, page, window) {
-    window.on('close', (event) => {
-      if (pageOptions.bindCloseToHide && !this.willQuit) {
-        event.preventDefault()
+	handleWindowClose(pageOptions, page, window) {
+		window.on('close', event => {
+			if (pageOptions.bindCloseToHide && !this.willQuit) {
+				event.preventDefault()
 
-        // @see https://github.com/electron/electron/issues/20263
-        if (window.isFullScreen()) {
-          window.once('leave-full-screen', () => window.hide())
+				// @see https://github.com/electron/electron/issues/20263
+				if (window.isFullScreen()) {
+					window.once('leave-full-screen', () => window.hide())
 
-          window.setFullScreen(false)
-        } else {
-          window.hide()
-        }
-      }
-      const bounds = window.getBounds()
-      this.emit('window-closed', { page, bounds })
-    })
-  }
+					window.setFullScreen(false)
+				} else {
+					window.hide()
+				}
+			}
+			const bounds = window.getBounds()
+			this.emit('window-closed', {page, bounds})
+		})
+	}
 
-  showWindow (page) {
-    const window = this.getWindow(page)
-    if (!window || (window.isVisible() && !window.isMinimized())) {
-      return
-    }
+	showWindow(page) {
+		const window = this.getWindow(page)
+		if (!window || (window.isVisible() && !window.isMinimized())) {
+			return
+		}
 
-    window.show()
-  }
+		window.show()
+	}
 
-  hideWindow (page) {
-    const window = this.getWindow(page)
-    if (!window || !window.isVisible()) {
-      return
-    }
-    window.hide()
-  }
+	hideWindow(page) {
+		const window = this.getWindow(page)
+		if (!window || !window.isVisible()) {
+			return
+		}
+		window.hide()
+	}
 
-  hideAllWindow () {
-    this.getWindowList().forEach((window) => {
-      window.hide()
-    })
-  }
+	hideAllWindow() {
+		this.getWindowList().forEach(window => {
+			window.hide()
+		})
+	}
 
-  toggleWindow (page) {
-    const window = this.getWindow(page)
-    if (!window) {
-      return
-    }
+	toggleWindow(page) {
+		const window = this.getWindow(page)
+		if (!window) {
+			return
+		}
 
-    if (!window.isVisible() || window.isFullScreen()) {
-      window.show()
-    } else {
-      window.hide()
-    }
-  }
+		if (!window.isVisible() || window.isFullScreen()) {
+			window.show()
+		} else {
+			window.hide()
+		}
+	}
 
-  getFocusedWindow () {
-    return BrowserWindow.getFocusedWindow()
-  }
+	getFocusedWindow() {
+		return BrowserWindow.getFocusedWindow()
+	}
 
-  handleBeforeQuit () {
-    app.on('before-quit', () => {
-      this.setWillQuit(true)
-    })
-  }
+	handleBeforeQuit() {
+		app.on('before-quit', () => {
+			this.setWillQuit(true)
+		})
+	}
 
-  onWindowBlur (event, window) {
-    window.hide()
-  }
+	onWindowBlur(event, window) {
+		window.hide()
+	}
 
-  handleWindowBlur () {
-    app.on('browser-window-blur', this.onWindowBlur)
-  }
+	handleWindowBlur() {
+		app.on('browser-window-blur', this.onWindowBlur)
+	}
 
-  unbindWindowBlur () {
-    app.removeListener('browser-window-blur', this.onWindowBlur)
-  }
+	unbindWindowBlur() {
+		app.removeListener('browser-window-blur', this.onWindowBlur)
+	}
 
-  handleAllWindowClosed () {
-    app.on('window-all-closed', (event) => {
-      event.preventDefault()
-    })
-  }
+	handleAllWindowClosed() {
+		app.on('window-all-closed', event => {
+			event.preventDefault()
+		})
+	}
 
-  sendCommandTo (window, command, ...args) {
-    if (!window) {
-      return
-    }
-    logger.info('[Motrix] send command to:', command, ...args)
-    window.webContents.send('command', command, ...args)
-  }
+	sendCommandTo(window, command, ...args) {
+		if (!window) {
+			return
+		}
+		logger.info('[Motrix] send command to:', command, ...args)
+		window.webContents.send('command', command, ...args)
+	}
 
-  sendMessageTo (window, channel, ...args) {
-    if (!window) {
-      return
-    }
-    window.webContents.send(channel, ...args)
-  }
+	sendMessageTo(window, channel, ...args) {
+		if (!window) {
+			return
+		}
+		window.webContents.send(channel, ...args)
+	}
 }
